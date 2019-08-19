@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace B13\SlimPhpBridge\Middleware;
+namespace B13\SlimPhp\Middleware;
 
 /*
  * This file is part of TYPO3 CMS-based extension "SlimPHP Bridge" by b13.
