@@ -32,6 +32,8 @@ class ExtbaseBridge implements MiddlewareInterface
         }
         if (!$GLOBALS['TSFE'] instanceof TypoScriptFrontendController) {
             $this->createGlobalTsfe($site);
+        } else {
+            $GLOBALS['TSFE']->id = $site->getRootPageId();
         }
         $this->bootFrontend();
         $this->bootExtbase();
@@ -52,7 +54,6 @@ class ExtbaseBridge implements MiddlewareInterface
     protected function bootFrontend(): void
     {
         $GLOBALS['TSFE']->fetch_the_id();
-        $GLOBALS['TSFE']->getFromCache();
         $GLOBALS['TSFE']->getConfigArray();
         $GLOBALS['TSFE']->settingLanguage();
         $GLOBALS['TSFE']->settingLocale();
