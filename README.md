@@ -3,8 +3,9 @@
 Boot up a SlimPHP application within a PSR-15 middleware of the TYPO3 Frontend
 Request.
 
-Two things you need for this:
-1. Create your endpoints with a SlimPHP `RequestResponseArgs` strategy
+There are two things you need for this:
+
+1. Create your endpoints with a SlimPHP `RequestResponseArgs` strategy in PHP
 2. Configure your endpoints in your site configuration file
 
 Clear caches and you should be good to go.
@@ -26,7 +27,7 @@ really quickly to handle custom endpoints without having to write TypoScript.
 
 ## Installation
 
-Use it via `composer req b13/slimphp` (currently composer-only as some PHP dependencies
+Use it via `composer req b13/slimphp-bridge` (currently composer-only as some PHP dependencies
 are needed).
 
 ## Configuration

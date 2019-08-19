@@ -1,6 +1,6 @@
 <?php
 $EM_CONF[$_EXTKEY] = [
-    'title' => 'SlimPHP Integration',
+    'title' => 'SlimPHP - TYPO3 Bridge',
     'description' => 'Provides an integration for SlimPHP for API calls in Frontend.',
     'category' => 'fe',
     'state' => 'stable',

@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
-namespace B13\SlimPhp\Middleware;
+namespace B13\SlimPhpBridge\Middleware;
 
 /*
- * This file is part of TYPO3 CMS-based extension "Slim Connector" by b13.
+ * This file is part of TYPO3 CMS-based extension "SlimPHP Bridge" by b13.
  *
  * It is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, either version 2

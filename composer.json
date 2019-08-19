@@ -1,8 +1,8 @@
 {
-	"name": "b13/slimphp",
+	"name": "b13/slimphp-bridge",
 	"type": "typo3-cms-extension",
-	"description": "Providers a middleware for registering Slim PHP applications within TYPO3 Frontend Sites",
-	"homepage": "https://github.com/b13/slimphp",
+	"description": "Provides a middleware for registering Slim PHP applications within TYPO3 Frontend Sites",
+	"homepage": "https://github.com/b13/slimphp-bridge",
 	"keywords": ["typo3", "api", "slimphp", "psr-15"],
 	"license": "GPL-2.0-or-later",
 	"authors": [
@@ -26,7 +26,7 @@
 	},
 	"extra": {
 		"typo3/cms": {
-			"extension-key": "slimphp"
+			"extension-key": "slimphp_bridge"
 		}
 	},
 	"autoload": {
