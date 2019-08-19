@@ -1,0 +1,48 @@
+{
+	"name": "b13/slimphp",
+	"type": "typo3-cms-extension",
+	"description": "Providers a middleware for registering Slim PHP applications within TYPO3 Frontend Sites",
+	"homepage": "https://github.com/b13/slimphp",
+	"keywords": ["typo3", "api", "slimphp", "psr-15"],
+	"license": "GPL-2.0-or-later",
+	"authors": [
+		{
+			"name": "b13 Development Team",
+			"role": "Maintainer",
+			"homepage": "https://b13.com"
+		}
+	],
+	"support": {
+		"issues": "https://github.com/b13/slimphp/issues"
+	},
+	"require": {
+		"typo3/cms-core": "^9.5 || ^10.0",
+		"slim/slim": "^4.1",
+		"nyholm/psr7": "^1.1",
+		"nyholm/psr7-server": "^0.3.0"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^8.3"
+	},
+	"extra": {
+		"typo3/cms": {
+			"extension-key": "slimphp"
+		}
+	},
+	"autoload": {
+		"psr-4": {
+			"B13\\SlimPhp\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"B13\\SlimPhp\\Tests\\": "tests/"
+		}
+	},
+	"scripts": {
+		"test": [
+			"@phpunit"
+		],
+		"phpunit": "php vendor/bin/phpunit tests/"
+	}
+}
