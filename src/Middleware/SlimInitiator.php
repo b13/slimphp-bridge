@@ -15,10 +15,12 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\App;
+use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 use Slim\Handlers\Strategies\RequestResponseArgs;
 use Slim\Routing\RouteCollectorProxy;
 use TYPO3\CMS\Core\Core\Environment;
+use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -62,6 +64,12 @@ class SlimInitiator implements MiddlewareInterface
 
             $app = AppFactory::create();
             $app->setBasePath($prefix);
+
+            if (!empty($config['middlewares'])) {
+                foreach (array_reverse($config['middlewares']) as $middleware) {
+                    $app->add($middleware);
+                }
+            }
             $this->setUpRouteCollector($app);
             $this->populateRoutes($app, $config);
             // We do not call $app->run() but $app->handle()

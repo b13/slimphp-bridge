@@ -40,6 +40,8 @@ is then available in the request object.
 ````yml
 routes:
   - prefix: '/api'
+    # add middlewares for the whole application. Convenient for any error handling or adding Preflight checks (OPTIONS)
+      - 'B13\MyExtension\Middleware\PreflightCheck'
     groups:
     - routePath: '/v1'
       middlewares:
