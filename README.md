@@ -94,4 +94,6 @@ Every time you change your configuration, ensure to clear the TYPO3 core caches.
 As TYPO3 Core, this extension is licensed under GPL2 or later. See the LICENSE file for more details.
 
 ## Authors & Maintenance
-This extension was initially created for a customer project by Benni Mack for b13, Stuttgart.
+This extension was initially created for a customer project by Benni Mack for [b13, Stuttgart](https://b13.com).
+
+[Find more TYPO3 extensions we have developed](https://b13.com/useful-typo3-extensions-from-b13-to-you) that help us deliver value in client projects. As part of the way we work, we focus on testing and best practices to ensure long-term performance, reliability, and results in all our code.
