@@ -27,8 +27,10 @@ really quickly to handle custom endpoints without having to write TypoScript.
 
 ## Installation
 
-Use it via `composer req b13/slimphp-bridge` (currently composer-only as some PHP dependencies
+Install it via `composer req b13/slimphp-bridge` (currently composer-only as some PHP dependencies
 are needed).
+
+Activate the extension in the backend of TYPO3. 
 
 ## Configuration
 
@@ -75,6 +77,14 @@ The configuration is similar to what you can do with SlimPHP and with TYPO3, and
 the `RequestResponseArgs` strategy pattern in SlimPHP.
 
 Once you create your endpoints (callbacks), clear your caches and you can run your installation directly.
+
+__TYPO3 10.4__: If you wan't to use DI in your callbacks, you will have to make them public in the DI configuration:
+
+```yaml
+services:
+  B13\MyExtension\Controller\Api\CustomerController:
+    public: true
+```
 
 Currently, the extension ships with Tobias Nyholm's PSR implementation, as this provides proper PSR-17 factories.
 

@@ -62,6 +62,9 @@ class SlimInitiator implements MiddlewareInterface
             }
             unset($config['prefix']);
 
+            if (version_compare(TYPO3_version, '10.4', '>=')) {
+                AppFactory::setContainer(GeneralUtility::getContainer());
+            }
             $app = AppFactory::create();
             $app->setBasePath($prefix);
 
@@ -119,12 +122,17 @@ class SlimInitiator implements MiddlewareInterface
 
     protected function setUpRouteCollector(App $app): void
     {
-        $cacheFolder = Environment::getVarPath() . '/cache/code/cache_core';
+        if (version_compare(TYPO3_version, '10.4', '>=')) {
+            $cacheFolder = Environment::getVarPath() . '/cache/code/core';
+            $siteConfigurationCacheFile = $cacheFolder . '/sites-configuration.php';
+        } else {
+            $cacheFolder = Environment::getVarPath() . '/cache/code/cache_core';
+            $siteConfigurationCacheFile = $cacheFolder . '/site-configuration.php';
+        }
         $routeCollector = $app->getRouteCollector();
         // Ensure to always use RequestResponseArgs strategy
         $routeCollector->setDefaultInvocationStrategy(new RequestResponseArgs());
         // A little hack to find the right "mtime"
-        $siteConfigurationCacheFile = $cacheFolder . '/site-configuration.php';
         $cacheFile = $cacheFolder . '/slim.routes.' . str_replace('/', '_', $app->getBasePath());
         if (file_exists($siteConfigurationCacheFile)) {
             $cacheFile .= '.' . filemtime($siteConfigurationCacheFile);

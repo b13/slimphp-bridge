@@ -31,33 +31,51 @@ class ExtbaseBridge implements MiddlewareInterface
             return $handler->handle($request);
         }
         if (!$GLOBALS['TSFE'] instanceof TypoScriptFrontendController) {
-            $this->createGlobalTsfe($site);
+            $this->createGlobalTsfe($site, $request);
         } else {
             $GLOBALS['TSFE']->id = $site->getRootPageId();
         }
-        $this->bootFrontend();
+        $this->bootFrontend($request);
         $this->bootExtbase();
         return $handler->handle($request);
     }
 
-    protected function createGlobalTsfe(Site $site): void
+    protected function createGlobalTsfe(Site $site, ServerRequestInterface $request): void
     {
-        $GLOBALS['TSFE'] = GeneralUtility::makeInstance(
-            TypoScriptFrontendController::class,
-            null,
-            $site->getRootPageId(),
-            0
-        );
-        $GLOBALS['TSFE']->initFEuser();
+        if (version_compare(TYPO3_version, '10.4', '>=')) {
+            $GLOBALS['TSFE'] = GeneralUtility::makeInstance(
+                TypoScriptFrontendController::class,
+                null,
+                $site,
+                $request->getAttribute('language'),
+                null,
+                $request->getAttribute('frontend.user', null)
+            );
+        } else {
+            $GLOBALS['TSFE'] = GeneralUtility::makeInstance(
+                TypoScriptFrontendController::class,
+                null,
+                $site->getRootPageId(),
+                0
+            );
+            $GLOBALS['TSFE']->initFEuser();
+        }
     }
 
-    protected function bootFrontend(): void
+    protected function bootFrontend(ServerRequestInterface $request): void
     {
-        $GLOBALS['TSFE']->fetch_the_id();
-        $GLOBALS['TSFE']->getConfigArray();
-        $GLOBALS['TSFE']->settingLanguage();
-        $GLOBALS['TSFE']->settingLocale();
-        $GLOBALS['TSFE']->newCObj();
+        if (version_compare(TYPO3_version, '10.4', '>=')) {
+            $GLOBALS['TSFE']->fetch_the_id($request);
+            $GLOBALS['TSFE']->getConfigArray($request);
+            $GLOBALS['TSFE']->settingLanguage($request);
+            $GLOBALS['TSFE']->newCObj();
+        } else {
+            $GLOBALS['TSFE']->fetch_the_id();
+            $GLOBALS['TSFE']->getConfigArray();
+            $GLOBALS['TSFE']->settingLanguage();
+            $GLOBALS['TSFE']->settingLocale();
+            $GLOBALS['TSFE']->newCObj();
+        }
     }
 
     protected function bootExtbase(): void
