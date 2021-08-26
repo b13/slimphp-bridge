@@ -36,16 +36,18 @@ Activate the extension in the backend of TYPO3.
 
 Then adapt your site configuration to add custom routes.
 
-The `prefix` value enables a SlimPHP Application. The current Site object
+The `type: slim` entry enables a SlimPHP Application. The current Site object
 is then available in the request object.
 
 ````yml
 routes:
-  - prefix: '/api'
+  - route: '/api'
+    type: 'slim'
     # add middlewares for the whole application. Convenient for any error handling or adding Preflight checks (OPTIONS)
+    middlewares:
       - 'B13\MyExtension\Middleware\PreflightCheck'
     groups:
-    - routePath: '/v1'
+    - route: '/v1'
       middlewares:
         # enable this if you don't manage your languages via the URL endpoint + the base site handling.
         - 'B13\SlimPhp\Middleware\PreferredClientLanguageSelector'
@@ -54,21 +56,21 @@ routes:
       routes:
         # load a file
         - methods: [any]
-          routePath: '/schema.json'
+          route: '/schema.json'
           file: 'EXT:myextension/Resources/Private/Api/schema_v1.json'
         - methods: [get]
-          routePath: '/article'
+          route: '/article'
           callback: B13\MyExtension\Controller\LoadArticlesController
         - methods: [get]
-          routePath: '/customer'
+          route: '/customer'
           callback: B13\MyExtension\Controller\CustomerController:fetchAll
           middlewares: [B13\MyExtension\Middleware\JwtAuthentication]
         - methods: [get]
-          routePath: '/customer/{id}'
+          route: '/customer/{id}'
           callback: B13\MyExtension\Controller\Api\CustomerController:fetch
           middlewares: [B13\MyExtension\Middleware\JwtAuthentication]
         - methods: [put]
-          routePath: '/customer/{id}'
+          route: '/customer/{id}'
           callback: B13\MyExtension\Controller\Api\CustomerController:update
           middlewares: [B13\MyExtension\Middleware\JwtAuthentication]
 ````
