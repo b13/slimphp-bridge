@@ -27,9 +27,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Checks the site configuration if there are any routes configured that Slim could handle.
- * The main key is the "prefix" in your site configuration "routes" option.
+ * The main key is the "type: slim" in your site configuration "routes" option.
  *
- * It then executes SlimPHP for the prefixes given (multiple independent Slim applications can be set up).
+ * It then executes SlimPHP for the given main route (multiple independent Slim applications can be set up).
  *
  * Slim Routing is cached, in the same folder as core caches.
  */
@@ -56,12 +56,19 @@ class SlimInitiator implements MiddlewareInterface
         }
 
         foreach ($routes as $config) {
-            $prefix = $config['prefix'] ?? '/';
+            $type = $config['type'] ?? '';
+            if ($type !== 'slim') {
+                continue;
+            }
+
+            $prefix = $config['route'] ?? '/';
             if (strpos($request->getUri()->getPath(), $prefix) !== 0) {
                 continue;
             }
-            unset($config['prefix']);
 
+            if (version_compare(TYPO3_version, '10.4', '>=')) {
+                AppFactory::setContainer(GeneralUtility::getContainer());
+            }
             $app = AppFactory::create();
             $app->setBasePath($prefix);
 
@@ -81,9 +88,10 @@ class SlimInitiator implements MiddlewareInterface
 
     protected function populateRoutes(RouteCollectorProxy $collector, array $routes): void
     {
+        $initiator = $this;
         foreach ($routes['groups'] ?? [] as $groupDetails) {
-            $route = $collector->group($groupDetails['routePath'], function(RouteCollectorProxy $group) use ($collector, $groupDetails) {
-                $this->populateRoutes($group, $groupDetails);
+            $route = $collector->group($groupDetails['route'], function(RouteCollectorProxy $group) use ($collector, $groupDetails, $initiator) {
+                $initiator->populateRoutes($group, $groupDetails);
             });
             if (!empty($groupDetails['middlewares'])) {
                 foreach (array_reverse($groupDetails['middlewares']) as $middleware) {
@@ -93,7 +101,7 @@ class SlimInitiator implements MiddlewareInterface
         }
         foreach ($routes['routes'] ?? [] as $details) {
             if ($details['file']) {
-                $route = $collector->get($details['routePath'], function(ServerRequestInterface $request, ResponseInterface $response) use ($details) {
+                $route = $collector->get($details['route'], function(ServerRequestInterface $request, ResponseInterface $response) use ($details) {
                     $filename = GeneralUtility::getFileAbsFileName($details['file']);
                     $response->getBody()->write(file_get_contents($filename));
                     return $response;
@@ -104,7 +112,7 @@ class SlimInitiator implements MiddlewareInterface
                     },
                     $details['methods']
                 );
-                $route = $collector->map($methods, $details['routePath'], $details['callback']);
+                $route = $collector->map($methods, $details['route'], $details['callback']);
             }
             if (!empty($details['name'])) {
                 $route->setName($details['name']);
@@ -119,12 +127,17 @@ class SlimInitiator implements MiddlewareInterface
 
     protected function setUpRouteCollector(App $app): void
     {
-        $cacheFolder = Environment::getVarPath() . '/cache/code/cache_core';
+        if (version_compare(TYPO3_version, '10.4', '>=')) {
+            $cacheFolder = Environment::getVarPath() . '/cache/code/core';
+            $siteConfigurationCacheFile = $cacheFolder . '/sites-configuration.php';
+        } else {
+            $cacheFolder = Environment::getVarPath() . '/cache/code/cache_core';
+            $siteConfigurationCacheFile = $cacheFolder . '/site-configuration.php';
+        }
         $routeCollector = $app->getRouteCollector();
         // Ensure to always use RequestResponseArgs strategy
         $routeCollector->setDefaultInvocationStrategy(new RequestResponseArgs());
         // A little hack to find the right "mtime"
-        $siteConfigurationCacheFile = $cacheFolder . '/site-configuration.php';
         $cacheFile = $cacheFolder . '/slim.routes.' . str_replace('/', '_', $app->getBasePath());
         if (file_exists($siteConfigurationCacheFile)) {
             $cacheFile .= '.' . filemtime($siteConfigurationCacheFile);
