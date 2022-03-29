@@ -14,6 +14,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Routing\PageArguments;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Core\Bootstrap;
@@ -24,32 +26,69 @@ use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
  */
 class ExtbaseBridge implements MiddlewareInterface
 {
+    private string $typo3Version = '';
+    private Context $context;
+
+    public function __construct(Context $context)
+    {
+        $this->context = $context;
+
+        if (class_exists(\TYPO3\CMS\Core\Information\Typo3Version::class)) {
+            $this->typo3Version = (string)(new \TYPO3\CMS\Core\Information\Typo3Version());
+        } else {
+            // todo: Remove when 10.4 compatibility is dropped
+            $this->typo3Version = TYPO3_version;
+        }
+    }
+
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $site = $request->getAttribute('site');
         if (!$site instanceof Site) {
             return $handler->handle($request);
         }
+
         if (!$GLOBALS['TSFE'] instanceof TypoScriptFrontendController) {
-            $this->createGlobalTsfe($site, $request);
+            $request = $this->createGlobalTsfe($site, $request);
         } else {
             $GLOBALS['TSFE']->id = $site->getRootPageId();
         }
+
         $this->bootFrontend($request);
         $this->bootExtbase();
+
         return $handler->handle($request);
     }
 
-    protected function createGlobalTsfe(Site $site, ServerRequestInterface $request): void
+    protected function createGlobalTsfe(Site $site, ServerRequestInterface $request): ServerRequestInterface
     {
-        if (version_compare(TYPO3_version, '10.4', '>=')) {
+        if (version_compare($this->typo3Version, '11.5', '>=')) {
+            $controller = GeneralUtility::makeInstance(
+                TypoScriptFrontendController::class,
+                $this->context,
+                $site,
+                $request->getAttribute('language', $site->getDefaultLanguage()),
+                new PageArguments($site->getRootPageId(), '0', []),
+                $request->getAttribute('frontend.user')
+            );
+
+            $controller->determineId($request);
+
+            $request = $request->withAttribute('frontend.controller', $controller);
+
+            // Make TSFE globally available
+            // @todo deprecate $GLOBALS['TSFE'] once TSFE is retrieved from the
+            //       PSR-7 request attribute frontend.controller throughout TYPO3 core
+            $GLOBALS['TSFE'] = $controller;
+        }
+        else if (version_compare($this->typo3Version, '10.4', '>=')) {
             $GLOBALS['TSFE'] = GeneralUtility::makeInstance(
                 TypoScriptFrontendController::class,
                 null,
                 $site,
                 $request->getAttribute('language'),
                 null,
-                $request->getAttribute('frontend.user', null)
+                $request->getAttribute('frontend.user')
             );
         } else {
             $GLOBALS['TSFE'] = GeneralUtility::makeInstance(
@@ -60,11 +99,15 @@ class ExtbaseBridge implements MiddlewareInterface
             );
             $GLOBALS['TSFE']->initFEuser();
         }
+
+        return $request;
     }
 
     protected function bootFrontend(ServerRequestInterface $request): void
     {
-        if (version_compare(TYPO3_version, '10.4', '>=')) {
+        if (version_compare($this->typo3Version, '11.5', '>=')) {
+            // nothing to do, TSFE is already ready
+        } else if (version_compare($this->typo3Version, '10.4', '>=')) {
             $GLOBALS['TSFE']->fetch_the_id($request);
             $GLOBALS['TSFE']->getConfigArray($request);
             $GLOBALS['TSFE']->settingLanguage($request);
