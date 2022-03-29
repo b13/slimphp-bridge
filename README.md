@@ -58,6 +58,7 @@ routes:
         - methods: [any]
           route: '/schema.json'
           file: 'EXT:myextension/Resources/Private/Api/schema_v1.json'
+          contentType: 'application/json'
         - methods: [get]
           route: '/article'
           callback: B13\MyExtension\Controller\LoadArticlesController
