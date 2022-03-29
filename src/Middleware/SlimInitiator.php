@@ -103,7 +103,7 @@ class SlimInitiator implements MiddlewareInterface
             if ($details['file']) {
                 $route = $collector->get($details['route'], function(ServerRequestInterface $request, ResponseInterface $response) use ($details) {
                     $filename = GeneralUtility::getFileAbsFileName($details['file']);
-                    if ($details['contentType']) {
+                    if (isset($details['contentType'])) {
                         $response = $response->withHeader('Content-Type', $details['contentType']);
                     }
                     $response->getBody()->write(file_get_contents($filename));
