@@ -16,8 +16,8 @@
 		"issues": "https://github.com/b13/slimphp/issues"
 	},
 	"require": {
-		"typo3/cms-core": "^9.5 || ^10.4",
-		"typo3/cms-frontend": "^9.5 || ^10.4",
+		"typo3/cms-core": "^10.4 || ^11.5",
+		"typo3/cms-frontend": "^10.4 || ^11.5",
 		"slim/slim": "^4.1",
 		"nyholm/psr7": "^1.1",
 		"nyholm/psr7-server": "^0.3.0"

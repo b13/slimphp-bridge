@@ -15,12 +15,10 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\App;
-use Slim\Exception\HttpNotFoundException;
 use Slim\Factory\AppFactory;
 use Slim\Handlers\Strategies\RequestResponseArgs;
 use Slim\Routing\RouteCollectorProxy;
 use TYPO3\CMS\Core\Core\Environment;
-use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Site\Entity\Site;
 use TYPO3\CMS\Core\Site\Entity\SiteInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -66,9 +64,8 @@ class SlimInitiator implements MiddlewareInterface
                 continue;
             }
 
-            if (version_compare(TYPO3_version, '10.4', '>=')) {
-                AppFactory::setContainer(GeneralUtility::getContainer());
-            }
+            AppFactory::setContainer(GeneralUtility::getContainer());
+
             $app = AppFactory::create();
             $app->setBasePath($prefix);
 
@@ -79,6 +76,10 @@ class SlimInitiator implements MiddlewareInterface
             }
             $this->setUpRouteCollector($app);
             $this->populateRoutes($app, $config);
+
+            // Typoscript condition matcher, or LocalizationUtility, need to access the request globally
+            $GLOBALS['TYPO3_REQUEST'] = $request;
+
             // We do not call $app->run() but $app->handle()
             return $app->handle($request);
         }
@@ -130,13 +131,8 @@ class SlimInitiator implements MiddlewareInterface
 
     protected function setUpRouteCollector(App $app): void
     {
-        if (version_compare(TYPO3_version, '10.4', '>=')) {
-            $cacheFolder = Environment::getVarPath() . '/cache/code/core';
-            $siteConfigurationCacheFile = $cacheFolder . '/sites-configuration.php';
-        } else {
-            $cacheFolder = Environment::getVarPath() . '/cache/code/cache_core';
-            $siteConfigurationCacheFile = $cacheFolder . '/site-configuration.php';
-        }
+        $cacheFolder = Environment::getVarPath() . '/cache/code/core';
+        $siteConfigurationCacheFile = $cacheFolder . '/sites-configuration.php';
         $routeCollector = $app->getRouteCollector();
         // Ensure to always use RequestResponseArgs strategy
         $routeCollector->setDefaultInvocationStrategy(new RequestResponseArgs());
