@@ -33,18 +33,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class SlimInitiator implements MiddlewareInterface
 {
-    private string $typo3Version = '';
-
-    public function __construct()
-    {
-        if (class_exists(\TYPO3\CMS\Core\Information\Typo3Version::class)) {
-            $this->typo3Version = (string)(new \TYPO3\CMS\Core\Information\Typo3Version());
-        } else {
-            // todo: Remove when 10.4 compatibility is dropped
-            $this->typo3Version = TYPO3_version;
-        }
-    }
-
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         /** @var SiteInterface $site */
@@ -76,9 +64,7 @@ class SlimInitiator implements MiddlewareInterface
                 continue;
             }
 
-            if (version_compare($this->typo3Version, '10.4', '>=')) {
-                AppFactory::setContainer(GeneralUtility::getContainer());
-            }
+            AppFactory::setContainer(GeneralUtility::getContainer());
 
             $app = AppFactory::create();
             $app->setBasePath($prefix);
@@ -142,13 +128,8 @@ class SlimInitiator implements MiddlewareInterface
 
     protected function setUpRouteCollector(App $app): void
     {
-        if (version_compare($this->typo3Version, '10.4', '>=')) {
-            $cacheFolder = Environment::getVarPath() . '/cache/code/core';
-            $siteConfigurationCacheFile = $cacheFolder . '/sites-configuration.php';
-        } else {
-            $cacheFolder = Environment::getVarPath() . '/cache/code/cache_core';
-            $siteConfigurationCacheFile = $cacheFolder . '/site-configuration.php';
-        }
+        $cacheFolder = Environment::getVarPath() . '/cache/code/core';
+        $siteConfigurationCacheFile = $cacheFolder . '/sites-configuration.php';
         $routeCollector = $app->getRouteCollector();
         // Ensure to always use RequestResponseArgs strategy
         $routeCollector->setDefaultInvocationStrategy(new RequestResponseArgs());

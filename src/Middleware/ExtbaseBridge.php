@@ -32,13 +32,7 @@ class ExtbaseBridge implements MiddlewareInterface
     public function __construct(Context $context)
     {
         $this->context = $context;
-
-        if (class_exists(\TYPO3\CMS\Core\Information\Typo3Version::class)) {
-            $this->typo3Version = (string)(new \TYPO3\CMS\Core\Information\Typo3Version());
-        } else {
-            // todo: Remove when 10.4 compatibility is dropped
-            $this->typo3Version = TYPO3_version;
-        }
+        $this->typo3Version = (string)(new \TYPO3\CMS\Core\Information\Typo3Version());
     }
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -80,8 +74,7 @@ class ExtbaseBridge implements MiddlewareInterface
             // @todo deprecate $GLOBALS['TSFE'] once TSFE is retrieved from the
             //       PSR-7 request attribute frontend.controller throughout TYPO3 core
             $GLOBALS['TSFE'] = $controller;
-        }
-        else if (version_compare($this->typo3Version, '10.4', '>=')) {
+        } else {
             $GLOBALS['TSFE'] = GeneralUtility::makeInstance(
                 TypoScriptFrontendController::class,
                 null,
@@ -90,14 +83,6 @@ class ExtbaseBridge implements MiddlewareInterface
                 null,
                 $request->getAttribute('frontend.user')
             );
-        } else {
-            $GLOBALS['TSFE'] = GeneralUtility::makeInstance(
-                TypoScriptFrontendController::class,
-                null,
-                $site->getRootPageId(),
-                0
-            );
-            $GLOBALS['TSFE']->initFEuser();
         }
 
         return $request;
@@ -107,16 +92,10 @@ class ExtbaseBridge implements MiddlewareInterface
     {
         if (version_compare($this->typo3Version, '11.5', '>=')) {
             // nothing to do, TSFE is already ready
-        } else if (version_compare($this->typo3Version, '10.4', '>=')) {
+        } else {
             $GLOBALS['TSFE']->fetch_the_id($request);
             $GLOBALS['TSFE']->getConfigArray($request);
             $GLOBALS['TSFE']->settingLanguage($request);
-            $GLOBALS['TSFE']->newCObj();
-        } else {
-            $GLOBALS['TSFE']->fetch_the_id();
-            $GLOBALS['TSFE']->getConfigArray();
-            $GLOBALS['TSFE']->settingLanguage();
-            $GLOBALS['TSFE']->settingLocale();
             $GLOBALS['TSFE']->newCObj();
         }
     }
