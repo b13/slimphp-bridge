@@ -42,7 +42,7 @@ class ExtbaseBridge implements MiddlewareInterface
             return $handler->handle($request);
         }
 
-        if (!$GLOBALS['TSFE'] instanceof TypoScriptFrontendController) {
+        if (!isset($GLOBALS['TSFE']) || !$GLOBALS['TSFE'] instanceof TypoScriptFrontendController) {
             $request = $this->createGlobalTsfe($site, $request);
         } else {
             $GLOBALS['TSFE']->id = $site->getRootPageId();
