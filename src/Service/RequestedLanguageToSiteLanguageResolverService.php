@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace B13\SlimPhp\Service;
 
@@ -44,7 +45,7 @@ class RequestedLanguageToSiteLanguageResolverService
     protected function fetchLanguagePreferencesFromRequest(ServerRequestInterface $request): array
     {
         $requestedLanguages = explode(',', $request->getHeaderLine('accept-language') ?? 'en');
-        return array_map(function($language) {
+        return array_map(function ($language) {
             [$locale] = explode(';', $language);
             return strtolower(str_replace('-', '_', $locale));
         }, $requestedLanguages);

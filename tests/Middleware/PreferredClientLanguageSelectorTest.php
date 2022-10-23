@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace B13\SlimPhp\Tests\Middleware;
 
@@ -27,7 +28,7 @@ class PreferredClientLanguageSelectorTest extends TestCase
     public function requestIsProperlyEnriched(): void
     {
         $subject = new PreferredClientLanguageSelector();
-        $dummyHandler = new class implements RequestHandlerInterface {
+        $dummyHandler = new class() implements RequestHandlerInterface {
             public function handle(ServerRequestInterface $request): ResponseInterface
             {
                 return new Response($request->getAttribute('language') ? 200 : 404);
@@ -40,23 +41,23 @@ class PreferredClientLanguageSelectorTest extends TestCase
                     'languageId' => 0,
                     'base' => '/en/',
                     'iso-639-1' => 'en',
-                    'locale' => 'en_US'
+                    'locale' => 'en_US',
                 ],
                 1 => [
                     'languageId' => 1,
                     'base' => '/fr/',
                     'iso-639-1' => 'fr',
-                    'locale' => 'fr_FR'
-                ]
-            ]
+                    'locale' => 'fr_FR',
+                ],
+            ],
         ]);
         $request = new ServerRequest('GET', 'https://www.example.com');
         $request = $request->withAttribute('site', $site);
         $response = $subject->process($request, $dummyHandler);
-        static::assertEquals($response->getStatusCode(), 200);
+        self::assertEquals($response->getStatusCode(), 200);
 
         $request = $request->withAttribute('site', null);
         $response = $subject->process($request, $dummyHandler);
-        static::assertEquals($response->getStatusCode(), 404);
+        self::assertEquals($response->getStatusCode(), 404);
     }
 }

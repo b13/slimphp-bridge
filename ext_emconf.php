@@ -1,4 +1,5 @@
 <?php
+
 $EM_CONF[$_EXTKEY] = [
     'title' => 'SlimPHP - TYPO3 Bridge',
     'description' => 'Provides an integration for SlimPHP for API calls in Frontend.',
@@ -7,10 +8,10 @@ $EM_CONF[$_EXTKEY] = [
     'author' => 'b13',
     'author_email' => 'typo3@b13.com',
     'author_company' => 'b13 GmbH',
-    'version' => '0.4.0',
+    'version' => '0.5.0',
     'constraints' => [
         'depends' => [
-            'typo3' => '10.4.0-11.5.99'
+            'typo3' => '10.4.0-12.9.99',
         ],
         'conflicts' => [],
         'suggests' => [],

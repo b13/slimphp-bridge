@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace B13\SlimPhp\Tests\Service;
 
@@ -30,26 +31,26 @@ class RequestedLanguageToSiteLanguageResolverServiceTest extends TestCase
                     'languageId' => 0,
                     'base' => '/en/',
                     'iso-639-1' => 'en',
-                    'locale' => 'en_US'
+                    'locale' => 'en_US',
                 ],
                 1 => [
                     'languageId' => 1,
                     'base' => '/fr/',
                     'iso-639-1' => 'fr',
-                    'locale' => 'fr_FR'
-                ]
-            ]
+                    'locale' => 'fr_FR',
+                ],
+            ],
         ]);
         $request = new ServerRequest('GET', 'https://www.example.com');
         $request = $request->withAttribute('site', $site);
 
         $request = $request->withHeader('Accept-language', 'de,fr;q=0.7,en;q=0.5');
-        static::assertSame($site->getLanguageById(1), $subject($request));
+        self::assertSame($site->getLanguageById(1), $subject($request));
 
         $request = $request->withHeader('Accept-language', 'en,fr;q=0.7');
-        static::assertSame($site->getLanguageById(0), $subject($request));
+        self::assertSame($site->getLanguageById(0), $subject($request));
 
         $request = $request->withHeader('Accept-language', 'de-DE');
-        static::assertSame($site->getLanguageById(0), $subject($request));
+        self::assertSame($site->getLanguageById(0), $subject($request));
     }
 }

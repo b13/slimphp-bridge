@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace B13\SlimPhp\Middleware;
 
@@ -105,7 +106,7 @@ class ExtbaseBridge implements MiddlewareInterface
         GeneralUtility::makeInstance(Bootstrap::class)->initialize([
             'extensionName' => 'slimphp',
             'vendorName' => 'B13',
-            'pluginName' => 'slimphp'
+            'pluginName' => 'slimphp',
         ]);
     }
 }

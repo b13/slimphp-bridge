@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 namespace B13\SlimPhp\Middleware;
 
@@ -91,7 +92,7 @@ class SlimInitiator implements MiddlewareInterface
     {
         $initiator = $this;
         foreach ($routes['groups'] ?? [] as $groupDetails) {
-            $route = $collector->group($groupDetails['route'], function(RouteCollectorProxy $group) use ($collector, $groupDetails, $initiator) {
+            $route = $collector->group($groupDetails['route'], function (RouteCollectorProxy $group) use ($collector, $groupDetails, $initiator) {
                 $initiator->populateRoutes($group, $groupDetails);
             });
             if (!empty($groupDetails['middlewares'])) {
@@ -102,7 +103,7 @@ class SlimInitiator implements MiddlewareInterface
         }
         foreach ($routes['routes'] ?? [] as $details) {
             if (!empty($details['file'])) {
-                $route = $collector->get($details['route'], function(ServerRequestInterface $request, ResponseInterface $response) use ($details) {
+                $route = $collector->get($details['route'], function (ServerRequestInterface $request, ResponseInterface $response) use ($details) {
                     $filename = GeneralUtility::getFileAbsFileName($details['file']);
                     if (isset($details['contentType'])) {
                         $response = $response->withHeader('Content-Type', $details['contentType']);
@@ -111,9 +112,10 @@ class SlimInitiator implements MiddlewareInterface
                     return $response;
                 });
             } else {
-                $methods = array_map(function($method) {
-                        return strtoupper($method);
-                    },
+                $methods = array_map(
+                    function ($method) {
+                    return strtoupper($method);
+                },
                     $details['methods']
                 );
                 $route = $collector->map($methods, $details['route'], $details['callback']);
