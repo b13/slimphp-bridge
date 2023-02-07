@@ -49,7 +49,7 @@ class ExtbaseBridge implements MiddlewareInterface
             $GLOBALS['TSFE']->id = $site->getRootPageId();
         }
 
-        $this->bootFrontend($request);
+        $request = $this->bootFrontend($request);
         $this->bootExtbase();
 
         return $handler->handle($request);
@@ -89,9 +89,12 @@ class ExtbaseBridge implements MiddlewareInterface
         return $request;
     }
 
-    protected function bootFrontend(ServerRequestInterface $request): void
+    protected function bootFrontend(ServerRequestInterface $request): ServerRequestInterface
     {
-        if (version_compare($this->typo3Version, '11.5', '>=')) {
+        if (version_compare($this->typo3Version, '12.2', '>=')) {
+            // Run Frontend TypoScript
+            $request = $GLOBALS['TSFE']->getFromCache($request);
+        } elseif (version_compare($this->typo3Version, '11.5', '>=')) {
             // nothing to do, TSFE is already ready
         } else {
             $GLOBALS['TSFE']->fetch_the_id($request);
@@ -99,6 +102,7 @@ class ExtbaseBridge implements MiddlewareInterface
             $GLOBALS['TSFE']->settingLanguage($request);
             $GLOBALS['TSFE']->newCObj();
         }
+        return $request;
     }
 
     protected function bootExtbase(): void
