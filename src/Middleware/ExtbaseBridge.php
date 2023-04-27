@@ -107,10 +107,18 @@ class ExtbaseBridge implements MiddlewareInterface
 
     protected function bootExtbase(ServerRequestInterface $request): void
     {
-        GeneralUtility::makeInstance(Bootstrap::class)->initialize([
-            'extensionName' => 'slimphp',
-            'vendorName' => 'B13',
-            'pluginName' => 'slimphp',
-        ], $request);
+        if (version_compare($this->typo3Version, '12.4', '>=')) {
+            GeneralUtility::makeInstance(Bootstrap::class)->initialize([
+               'extensionName' => 'slimphp',
+               'vendorName' => 'B13',
+               'pluginName' => 'slimphp',
+           ], $request);
+        }else {
+            GeneralUtility::makeInstance(Bootstrap::class)->initialize([
+               'extensionName' => 'slimphp',
+               'vendorName' => 'B13',
+               'pluginName' => 'slimphp',
+           ]);
+        }
     }
 }
