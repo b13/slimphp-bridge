@@ -99,7 +99,7 @@ class SlimInitiator implements MiddlewareInterface
                     case 403:
                         return $errorController->accessDeniedAction($request, $e->getMessage());
                     default:
-                        return throw $e;
+                        throw $e;
                 }
             }
         }
