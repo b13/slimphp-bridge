@@ -58,6 +58,7 @@ class ExtbaseBridge implements MiddlewareInterface
     protected function createGlobalTsfe(Site $site, ServerRequestInterface $request): ServerRequestInterface
     {
         if (version_compare($this->typo3Version, '11.5', '>=')) {
+            // Mimic \TYPO3\CMS\Frontend\Middleware\TypoScriptFrontendInitialization
             $controller = GeneralUtility::makeInstance(
                 TypoScriptFrontendController::class,
                 $this->context,
@@ -92,16 +93,21 @@ class ExtbaseBridge implements MiddlewareInterface
     protected function bootFrontend(ServerRequestInterface $request): ServerRequestInterface
     {
         if (version_compare($this->typo3Version, '12.2', '>=')) {
-            // Run Frontend TypoScript
+            // Mimic \TYPO3\CMS\Frontend\Middleware\PrepareTypoScriptFrontendRendering
             $request = $GLOBALS['TSFE']->getFromCache($request);
+            $GLOBALS['TSFE']->releaseLocks();
         } elseif (version_compare($this->typo3Version, '11.5', '>=')) {
-            // nothing to do, TSFE is already ready
+            // Mimic \TYPO3\CMS\Frontend\Middleware\PrepareTypoScriptFrontendRendering
+            $GLOBALS['TSFE']->getFromCache($request);
+            $GLOBALS['TSFE']->getConfigArray($request);
+            $GLOBALS['TSFE']->releaseLocks();
         } else {
             $GLOBALS['TSFE']->fetch_the_id($request);
             $GLOBALS['TSFE']->getConfigArray($request);
             $GLOBALS['TSFE']->settingLanguage($request);
             $GLOBALS['TSFE']->newCObj();
         }
+
         return $request;
     }
 
