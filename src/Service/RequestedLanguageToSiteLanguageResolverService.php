@@ -34,7 +34,7 @@ class RequestedLanguageToSiteLanguageResolverService
             /** @var SiteLanguage $language */
             foreach ($site->getLanguages() as $language) {
                 [$locale] = explode('.', strtolower((string)$language->getLocale()));
-                if ($requestLanguageCode === $locale || $requestLanguageCode === $language->getTwoLetterIsoCode()) {
+                if ($requestLanguageCode === $locale || $requestLanguageCode === $language->getLocale()->getLanguageCode()) {
                     return $language;
                 }
             }
