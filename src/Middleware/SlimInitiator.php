@@ -56,30 +56,45 @@ class SlimInitiator implements MiddlewareInterface
             return $handler->handle($request);
         }
 
+        // Populates app routes
+        $app = null;
         foreach ($routes as $config) {
+            // Handle only slim routes
             $type = $config['type'] ?? '';
             if ($type !== 'slim') {
                 continue;
             }
 
+            // Handle only routes with a prefix matching the current request path
             $prefix = $config['route'] ?? '/';
             if (strpos($request->getUri()->getPath(), $prefix) !== 0) {
                 continue;
             }
 
-            AppFactory::setContainer(GeneralUtility::getContainer());
+            if (!$app instanceof App) {
+                // Initialize Slim app and routeCollector only once
+                AppFactory::setContainer(GeneralUtility::getContainer());
 
-            $app = AppFactory::create();
-            $app->setBasePath($prefix);
+                $app = AppFactory::create();
+                $app->setBasePath($prefix);
 
-            if (!empty($config['middlewares'])) {
-                foreach (array_reverse($config['middlewares']) as $middleware) {
-                    $app->add($middleware);
+                if (!empty($config['middlewares'])) {
+                    foreach (array_reverse($config['middlewares']) as $middleware) {
+                        $app->add($middleware);
+                    }
                 }
+                $this->setUpRouteCollector($app, $site);
+            } elseif ($prefix !== $app->getBasePath()) {
+                // Cannot handle two different base paths
+                continue;
             }
-            $this->setUpRouteCollector($app, $site);
-            $this->populateRoutes($app, $config);
 
+            // Populate routes from site configuration
+            $this->populateRoutes($app, $config);
+        }
+
+        // Handle request with Slim app
+        if ($app instanceof App) {
             // Typoscript condition matcher, or LocalizationUtility, need to access the request globally
             $GLOBALS['TYPO3_REQUEST'] = $request;
 
