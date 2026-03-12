@@ -77,7 +77,7 @@ class SlimInitiator implements MiddlewareInterface
                     $app->add($middleware);
                 }
             }
-            $this->setUpRouteCollector($app);
+            $this->setUpRouteCollector($app, $site);
             $this->populateRoutes($app, $config);
 
             // Typoscript condition matcher, or LocalizationUtility, need to access the request globally
@@ -151,7 +151,7 @@ class SlimInitiator implements MiddlewareInterface
         }
     }
 
-    protected function setUpRouteCollector(App $app): void
+    protected function setUpRouteCollector(App $app, Site $site): void
     {
         $cacheFolder = Environment::getVarPath() . '/cache/code/core';
         $siteConfigurationCacheFile = $cacheFolder . '/sites-configuration.php';
@@ -159,7 +159,7 @@ class SlimInitiator implements MiddlewareInterface
         // Ensure to always use RequestResponseArgs strategy
         $routeCollector->setDefaultInvocationStrategy(new RequestResponseArgs());
         // A little hack to find the right "mtime"
-        $cacheFile = $cacheFolder . '/slim.routes.' . str_replace('/', '_', $app->getBasePath());
+        $cacheFile = $cacheFolder . '/slim.routes.' . $site->getIdentifier() . '.' . str_replace('/', '_', $app->getBasePath());
         if (file_exists($siteConfigurationCacheFile)) {
             $cacheFile .= '.' . filemtime($siteConfigurationCacheFile);
         }
