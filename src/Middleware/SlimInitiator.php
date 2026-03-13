@@ -56,30 +56,45 @@ class SlimInitiator implements MiddlewareInterface
             return $handler->handle($request);
         }
 
+        // Populates app routes
+        $app = null;
         foreach ($routes as $config) {
+            // Handle only slim routes
             $type = $config['type'] ?? '';
             if ($type !== 'slim') {
                 continue;
             }
 
+            // Handle only routes with a prefix matching the current request path
             $prefix = $config['route'] ?? '/';
             if (strpos($request->getUri()->getPath(), $prefix) !== 0) {
                 continue;
             }
 
-            AppFactory::setContainer(GeneralUtility::getContainer());
+            if (!$app instanceof App) {
+                // Initialize Slim app and routeCollector only once
+                AppFactory::setContainer(GeneralUtility::getContainer());
 
-            $app = AppFactory::create();
-            $app->setBasePath($prefix);
+                $app = AppFactory::create();
+                $app->setBasePath($prefix);
 
-            if (!empty($config['middlewares'])) {
-                foreach (array_reverse($config['middlewares']) as $middleware) {
-                    $app->add($middleware);
+                if (!empty($config['middlewares'])) {
+                    foreach (array_reverse($config['middlewares']) as $middleware) {
+                        $app->add($middleware);
+                    }
                 }
+                $this->setUpRouteCollector($app, $site);
+            } elseif ($prefix !== $app->getBasePath()) {
+                // Cannot handle two different base paths
+                continue;
             }
-            $this->setUpRouteCollector($app);
-            $this->populateRoutes($app, $config);
 
+            // Populate routes from site configuration
+            $this->populateRoutes($app, $config);
+        }
+
+        // Handle request with Slim app
+        if ($app instanceof App) {
             // Typoscript condition matcher, or LocalizationUtility, need to access the request globally
             $GLOBALS['TYPO3_REQUEST'] = $request;
 
@@ -151,7 +166,7 @@ class SlimInitiator implements MiddlewareInterface
         }
     }
 
-    protected function setUpRouteCollector(App $app): void
+    protected function setUpRouteCollector(App $app, Site $site): void
     {
         $cacheFolder = Environment::getVarPath() . '/cache/code/core';
         $siteConfigurationCacheFile = $cacheFolder . '/sites-configuration.php';
@@ -159,7 +174,7 @@ class SlimInitiator implements MiddlewareInterface
         // Ensure to always use RequestResponseArgs strategy
         $routeCollector->setDefaultInvocationStrategy(new RequestResponseArgs());
         // A little hack to find the right "mtime"
-        $cacheFile = $cacheFolder . '/slim.routes.' . str_replace('/', '_', $app->getBasePath());
+        $cacheFile = $cacheFolder . '/slim.routes.' . $site->getIdentifier() . '.' . str_replace('/', '_', $app->getBasePath());
         if (file_exists($siteConfigurationCacheFile)) {
             $cacheFile .= '.' . filemtime($siteConfigurationCacheFile);
         }
