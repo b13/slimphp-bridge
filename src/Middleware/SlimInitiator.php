@@ -67,7 +67,7 @@ class SlimInitiator implements MiddlewareInterface
 
             // Handle only routes with a prefix matching the current request path
             $prefix = $config['route'] ?? '/';
-            if (strpos($request->getUri()->getPath(), $prefix) !== 0) {
+            if (strpos($request->getUri()->getPath(), rtrim($prefix, '/') . '/') !== 0) {
                 continue;
             }
 
