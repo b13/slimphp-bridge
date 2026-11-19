@@ -30,7 +30,21 @@ really quickly to handle custom endpoints without having to write TypoScript.
 Install it via `composer req b13/slimphp-bridge` (currently composer-only as some PHP dependencies
 are needed).
 
-Activate the extension in the backend of TYPO3. 
+Activate the extension in the backend of TYPO3.
+
+## Using Extbase in your endpoints
+
+Add the `B13\SlimPhp\Middleware\ExtbaseBridge` middleware to a group or route (see example below) if your
+callbacks use Extbase, e.g. repositories or the persistence manager.
+
+Slim is booted right after the site has been resolved, before TYPO3 resolves a page. The middleware therefore
+uses the root page of the current site, calculates the full TypoScript for it and adds the
+`frontend.page.information` and `frontend.typoscript` request attributes, before Extbase is initialized.
+This way the Extbase configuration (`config.tx_extbase`, `plugin.tx_slimphp`) is available. With TYPO3 v13,
+`$GLOBALS['TSFE']` is set up as well.
+
+If the root page of the site cannot be accessed or no TypoScript record is found, the error response of
+TYPO3 is returned.
 
 ## Configuration
 
